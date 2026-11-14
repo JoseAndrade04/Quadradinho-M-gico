@@ -13,8 +13,8 @@ class Jogador:
         pygame.draw.rect(tela, self.cor, self.rect)
         pygame.draw.rect(tela, (0, 0, 0), self.rect, 3)
 
-    def mover(self, teclas, dt):
-        
+    def mover(self, teclas, dt, paredes):
+
         direcao = pygame.Vector2(0, 0)
 
         if teclas[pygame.K_LEFT] or teclas[pygame.K_a]:
@@ -32,12 +32,29 @@ class Jogador:
         if direcao.length_squared() > 0:
             direcao = direcao.normalize()
 
-        self.posicao += direcao * self.velocidade * dt
+        self.posicao.x += direcao.x * self.velocidade * dt
+        self.rect.x = round(self.posicao.x)
 
-        self.rect.topleft = (
-            round(self.posicao.x),
-            round(self.posicao.y),
-        )
+        for parede in paredes:
+            if self.rect.colliderect(parede):
+                if direcao.x > 0:
+                    self.rect.right = parede.left
+                elif direcao.x < 0:
+                    self.rect.left = parede.right
+
+                self.posicao.x = self.rect.x
+
+        self.posicao.y += direcao.y * self.velocidade * dt
+        self.rect.y = round(self.posicao.y)
+
+        for parede in paredes:
+            if self.rect.colliderect(parede):
+                if direcao.y > 0:
+                    self.rect.bottom = parede.top
+                elif direcao.y < 0:
+                    self.rect.top = parede.bottom
+
+                self.posicao.y = self.rect.y
 
     def limitar_na_tela(self, tela):
     

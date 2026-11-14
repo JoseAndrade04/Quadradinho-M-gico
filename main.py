@@ -19,13 +19,13 @@ jogador=Jogador(fase.inicio[0], fase.inicio[1])
 rodando = True
 
 while rodando:
-    dt = relogio.tick(60)/1000
+    dt = min(relogio.tick(60)/1000, 0.05)
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             rodando = False
     
     teclas=pygame.key.get_pressed()
-    jogador.mover(teclas, dt)
+    jogador.mover(teclas, dt, fase.paredes)
     jogador.limitar_na_tela(tela)
 
     

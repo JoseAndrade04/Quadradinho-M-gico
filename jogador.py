@@ -38,3 +38,24 @@ class Jogador:
             round(self.posicao.x),
             round(self.posicao.y),
         )
+
+    def limitar_na_tela(self, tela):
+    
+        limites = tela.get_rect()
+
+        if self.posicao.x < limites.left:
+            self.posicao.x = limites.left
+
+        if self.posicao.x > limites.right - self.rect.width:
+            self.posicao.x = limites.right - self.rect.width
+
+        if self.posicao.y < limites.top:
+            self.posicao.y = limites.top
+
+        if self.posicao.y > limites.bottom - self.rect.height:
+            self.posicao.y = limites.bottom - self.rect.height
+
+        self.rect.topleft = (
+            round(self.posicao.x),
+            round(self.posicao.y),
+        )

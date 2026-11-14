@@ -1,5 +1,5 @@
 import pygame
-
+from jogador import Jogador
 
 pygame.init()
 
@@ -13,7 +13,7 @@ pygame.display.set_caption("Quadradinho Mágico")
 
 
 relogio = pygame.time.Clock()
-
+jogador=Jogador(100,300)
 rodando = True
 
 while rodando:
@@ -24,6 +24,8 @@ while rodando:
 
     
     tela.fill((180, 180, 255))
+    jogador.desenhar(tela)
+
 
     
     pygame.display.flip()

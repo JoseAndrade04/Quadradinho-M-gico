@@ -24,6 +24,7 @@ while rodando:
     
     teclas=pygame.key.get_pressed()
     jogador.mover(teclas, dt)
+    jogador.limitar_na_tela(tela)
 
     
     tela.fill((180, 180, 255))

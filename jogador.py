@@ -13,7 +13,7 @@ class Jogador:
         pygame.draw.rect(tela, self.cor, self.rect)
         pygame.draw.rect(tela, (0, 0, 0), self.rect, 3)
 
-        def mover(self, teclas, dt):
+    def mover(self, teclas, dt):
         
         direcao = pygame.Vector2(0, 0)
 

@@ -5,7 +5,7 @@ class Fase:
         self.paredes=[pygame.Rect(50,150,800,20), pygame.Rect(50,430,800,20),pygame.Rect(50,150,20,300),pygame.Rect(830,150,20,300)]
         self.area_inicial= pygame.Rect(70,170,120,260)
         self.area_final= pygame.Rect(710,170,120,260)
-        self.incio = (100,300)
+        self.inicio = (100,300)
 
     def desenhar(self,tela):
         pygame.draw.rect(tela,(240,240,255), (70,170,760,260))

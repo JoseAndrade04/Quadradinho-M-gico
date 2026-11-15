@@ -79,6 +79,24 @@ while rodando:
             center=(LARGURA // 2, 110)
         )
         tela.blit(mensagem, posicao_mensagem)
+    if venceu:
+        mensagem = fonte.render(
+            "Fase concluída!", True, (0, 0, 0)
+        )
+        posicao_mensagem = mensagem.get_rect(
+            center=(LARGURA // 2, 110)
+        )
+        tela.blit(mensagem, posicao_mensagem)
+
+        instrucao = fonte.render(
+            "Pressione R para jogar novamente",
+            True,
+            (0, 0, 0),
+        )
+        posicao_instrucao = instrucao.get_rect(
+            center=(LARGURA // 2, 500)
+        )
+        tela.blit(instrucao, posicao_instrucao)
     pygame.display.flip()
 
 pygame.quit()

@@ -1,13 +1,21 @@
 import pygame
+TOTAL_FASES=2
 
 class Fase:
-    def __init__(self):
+    def __init__(self,numero=1):
         self.paredes=[pygame.Rect(50,150,800,20), pygame.Rect(50,430,800,20),pygame.Rect(50,150,20,300),pygame.Rect(830,150,20,300)]
         self.area_inicial= pygame.Rect(70,170,120,260)
         self.area_final= pygame.Rect(710,170,120,260)
         self.inicio = (100,300)
-        self.obstaculos=[Obstaculo(300,300,220,680),]
-        self.moedas=[Moeda(350,230),Moeda(550,370),]
+        if numero==1:
+            self.obstaculos=[Obstaculo(300,300,220,680),]
+            self.moedas=[Moeda(350,230),Moeda(550,370),]
+        elif numero==2:
+            self.obstaculos=[Obstaculo(250,230,220,680),Obstaculo(600,370,220,680)]
+            self.moedas=[Moeda(600,230),Moeda(350,370),Moeda(450,300),]
+        else:
+            raise ValueError("Número de fase inexistente")
+            
 
     def atualizar(self,dt):
         for obstaculo in self.obstaculos:

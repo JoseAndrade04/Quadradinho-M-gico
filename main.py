@@ -1,43 +1,76 @@
 import pygame
 from jogador import Jogador
 from fases import Fase, TOTAL_FASES
+from interface import Interface
 
 pygame.init()
 
 
 LARGURA = 900
-
 ALTURA = 600
 
 tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Quadradinho Mágico")
-
-
 relogio = pygame.time.Clock()
+
 numero_fase=1
 fase=Fase(numero_fase)
 jogador=Jogador(fase.inicio[0], fase.inicio[1])
+
 mortes=0
 fonte=pygame.font.Font(None,36)
+
 venceu=False
+
+interface = Interface()
+tela_atual = "menu"
+
 rodando = True
 
 while rodando:
     dt = min(relogio.tick(60) / 1000, 0.05)
+
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             rodando = False
 
         elif evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_r and venceu:
-                numero_fase=1
-                fase=Fase(numero_fase)
-                jogador = Jogador(
-                    fase.inicio[0], fase.inicio[1]
-                )
+            if tela_atual == "menu":
+                if evento.key == pygame.K_RETURN:
+                    tela_atual = "jogo"
 
-                mortes = 0
-                venceu = False
+                elif evento.key == pygame.K_i:
+                    tela_atual = "instrucoes"
+
+            elif tela_atual == "instrucoes":
+                if evento.key == pygame.K_ESCAPE:
+                    tela_atual = "menu"
+
+            elif tela_atual == "jogo":
+                if evento.key == pygame.K_r and venceu:
+                    numero_fase = 1
+                    fase = Fase(numero_fase)
+
+                    jogador = Jogador(
+                        fase.inicio[0], fase.inicio[1]
+                    )
+
+                    mortes = 0
+                    venceu = False
+
+    if not rodando:
+        break
+
+    if tela_atual == "menu":
+        interface.desenhar_menu(tela)
+        pygame.display.flip()
+        continue
+
+    if tela_atual == "instrucoes":
+        interface.desenhar_instrucoes(tela)
+        pygame.display.flip()
+        continue
+
     if not venceu:
         teclas = pygame.key.get_pressed()
         jogador.mover(teclas, dt, fase.paredes)

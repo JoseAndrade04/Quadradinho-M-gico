@@ -70,8 +70,8 @@ class Moeda:
     def tentar_coletar(self,jogador_rect):
         if self.coletada:
             return
-        ponto_x=max(jogador_rect.left,min(self.posicao.x,jogador_rect.right)),
-        ponto_y=max(jogador_rect.top,min(self.posicao.y,jogador_rect.bottom)),
+        ponto_x=max(jogador_rect.left,min(self.posicao.x,jogador_rect.right))
+        ponto_y=max(jogador_rect.top,min(self.posicao.y,jogador_rect.bottom))
 
         distancia_x= self.posicao.x-ponto_x
         distancia_y= self.posicao.y-ponto_y

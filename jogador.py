@@ -76,3 +76,31 @@ class Jogador:
             round(self.posicao.x),
             round(self.posicao.y),
         )
+
+    def encostou_obstaculo(self, obstaculo):
+
+        ponto_x = max(
+            self.rect.left,
+            min(obstaculo.posicao.x, self.rect.right),
+        )
+        ponto_y = max(
+            self.rect.top,
+            min(obstaculo.posicao.y, self.rect.bottom),
+        )
+
+        distancia_x = obstaculo.posicao.x - ponto_x
+        distancia_y = obstaculo.posicao.y - ponto_y
+
+        distancia_quadrado = distancia_x**2 + distancia_y**2
+
+        return distancia_quadrado <= obstaculo.raio**2
+
+    def voltar_ao_inicio(self, inicio):
+
+        self.posicao = pygame.Vector2(inicio[0], inicio[1])
+        self.rect.topleft = (
+            round(self.posicao.x),
+            round(self.posicao.y),
+        )
+
+    

@@ -35,6 +35,13 @@ class Fase:
         for moeda in self.moedas:
             moeda.coletada=False
 
+    def foi_concluida(self,jogador_rect):
+        for moeda in self.moedas:
+            if not moeda.coletada:
+                return False
+
+        return self.area_final.contains(jogador_rect)
+
 class Obstaculo:
     def __init__(self,x,y,limite_esquerdo,limite_direito):
         self.posicao=pygame.Vector2(x,y)

@@ -31,7 +31,7 @@ class Fase:
         for moeda in self.moedas:
             moeda.tentar_coletar(jogador_rect)
 
-    def reniciar_moedas(self):
+    def reiniciar_moedas(self):
         for moeda in self.moedas:
             moeda.coletada=False
 

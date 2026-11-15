@@ -1,6 +1,6 @@
 import pygame
 from jogador import Jogador
-from fases import Fase
+from fases import Fase, TOTAL_FASES
 
 pygame.init()
 
@@ -14,7 +14,8 @@ pygame.display.set_caption("Quadradinho Mágico")
 
 
 relogio = pygame.time.Clock()
-fase=Fase()
+numero_fase=1
+fase=Fase(numero_fase)
 jogador=Jogador(fase.inicio[0], fase.inicio[1])
 mortes=0
 fonte=pygame.font.Font(None,36)
@@ -29,7 +30,8 @@ while rodando:
 
         elif evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_r and venceu:
-                fase = Fase()
+                numero_fase=1
+                fase=Fase(numero_fase)
                 jogador = Jogador(
                     fase.inicio[0], fase.inicio[1]
                 )
@@ -51,7 +53,12 @@ while rodando:
         fase.coletar_moedas(jogador.rect)
 
         if fase.foi_concluida(jogador.rect):
-            venceu = True
+            if numero_fase < TOTAL_FASES:
+                numero_fase+=1
+                fase=Fase(numero_fase)
+                jogador.voltar_ao_inicio(fase.inicio)
+            else:
+                venceu=True
     tela.fill((180, 180, 255))
     fase.desenhar(tela)
     jogador.desenhar(tela)

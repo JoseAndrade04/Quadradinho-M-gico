@@ -35,13 +35,22 @@ while rodando:
         if jogador.encostou_obstaculo(obstaculo):
             mortes+=1
             jogador.voltar_ao_inicio(fase.inicio)
+            fase.reniciar_moedas()
             break
+        fase.coletar_moedas(jogador.rect)
 
     tela.fill((180, 180, 255))
     fase.desenhar(tela)
     jogador.desenhar(tela)
     texto_mortes = fonte.render( f'Mortes: {mortes}', True, (0,0,0))
     tela.blit(texto_mortes, (20,20))
+
+    coletadas=0
+    for moeda in fase.moedas:
+        if moeda.coletada:
+            coletadas +=1
+    texto_moedas = fonte.render(f"Moedas: {coletadas}/{len(fase.moedas)}", True, (0,0,0),)
+    tela.blit(texto_moedas, (20,60))
 
 
 

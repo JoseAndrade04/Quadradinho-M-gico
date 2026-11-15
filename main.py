@@ -16,6 +16,8 @@ pygame.display.set_caption("Quadradinho Mágico")
 relogio = pygame.time.Clock()
 fase=Fase()
 jogador=Jogador(fase.inicio[0], fase.inicio[1])
+mortes=0
+fonte=pygame.font.Font(None,36)
 rodando = True
 
 while rodando:
@@ -29,11 +31,17 @@ while rodando:
     jogador.limitar_na_tela(tela)
 
     fase.atualizar(dt)
+    for obstaculo in fase.obstaculos:
+        if jogador.encostou_obstaculo(obstaculo):
+            mortes+=1
+            jogador.voltar_ao_inicio(fase.inicio)
+            break
 
-    
     tela.fill((180, 180, 255))
     fase.desenhar(tela)
     jogador.desenhar(tela)
+    texto_mortes = fonte.render( f'Mortes: {mortes}', True, (0,0,0))
+    tela.blit(texto_mortes, (20,20))
 
 
 

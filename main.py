@@ -28,6 +28,8 @@ while rodando:
     jogador.mover(teclas, dt, fase.paredes)
     jogador.limitar_na_tela(tela)
 
+    fase.atualizar(dt)
+
     
     tela.fill((180, 180, 255))
     fase.desenhar(tela)

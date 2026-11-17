@@ -76,14 +76,24 @@ while rodando:
         jogador.mover(teclas, dt, fase.paredes)
         jogador.limitar_na_tela(tela)
         fase.atualizar(dt)
+        
         for obstaculo in fase.obstaculos:
-            if jogador.encostou_obstaculo(obstaculo):
+    
+            if (
+                not fase.esta_em_area_segura(jogador.rect)
+                and jogador.encostou_obstaculo(obstaculo)
+            ):
                 mortes += 1
-                jogador.voltar_ao_inicio(fase.inicio)
+
+                jogador.voltar_ao_inicio(
+                    fase.ponto_retorno
+                )
+
                 fase.reiniciar_moedas()
                 break
-
+        
         fase.coletar_moedas(jogador.rect)
+        fase.verificar_checkpoints(jogador.rect)
 
         if fase.foi_concluida(jogador.rect):
             if numero_fase < TOTAL_FASES:
@@ -92,16 +102,17 @@ while rodando:
                 jogador.voltar_ao_inicio(fase.inicio)
             else:
                 venceu=True
+
     tela.fill((180, 180, 255))
     fase.desenhar(tela)
     jogador.desenhar(tela)
 
-    # Mostra as mortes.
     texto_mortes = fonte.render(
         f"Mortes: {mortes}", True, (0, 0, 0)
     )
     tela.blit(texto_mortes, (20, 20))
     coletadas = 0
+
     for moeda in fase.moedas:
         if moeda.coletada:
             coletadas += 1
@@ -111,14 +122,7 @@ while rodando:
         (0, 0, 0),
     )
     tela.blit(texto_moedas, (20, 60))
-    if venceu:
-        mensagem = fonte.render(
-            "Fase concluída!", True, (0, 0, 0)
-        )
-        posicao_mensagem = mensagem.get_rect(
-            center=(LARGURA // 2, 110)
-        )
-        tela.blit(mensagem, posicao_mensagem)
+
     if venceu:
         mensagem = fonte.render(
             "Fase concluída!", True, (0, 0, 0)

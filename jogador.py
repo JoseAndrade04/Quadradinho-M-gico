@@ -5,7 +5,7 @@ class Jogador:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 24, 24)
         self.posicao = pygame.Vector2(x, y)
-        self.cor = (255, 0, 0)
+        self.cor = (0, 0, 255)
         self.velocidade = 240
         
 

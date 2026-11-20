@@ -5,13 +5,13 @@ class Jogador:
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, 24, 24)
         self.posicao = pygame.Vector2(x, y)
-        self.cor = (0, 0, 255)
+        self.cor = (200, 16, 46)
         self.velocidade = 240
         
 
     def desenhar(self, tela):
         pygame.draw.rect(tela, self.cor, self.rect)
-        pygame.draw.rect(tela, (0, 0, 0), self.rect, 3)
+        pygame.draw.rect(tela, (255, 255, 255), self.rect, 2)
 
     def mover(self, teclas, dt, paredes):
 

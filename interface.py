@@ -13,17 +13,18 @@ class Interface:
         else:
             fonte = self.fonte_texto
 
-        imagem = fonte.render(texto, True, (0, 0, 0))
+        cor=(200,16,46) if titulo else (45,45,52)
+        imagem = fonte.render(texto, True, cor)
         posicao = imagem.get_rect(
             center=(tela.get_width() // 2, y)
         )
         tela.blit(imagem, posicao)
 
     def desenhar_menu(self, tela):
-        tela.fill((180, 180, 255))
+        tela.fill((240, 240, 243))
 
         self.texto_centralizado(
-            tela, "Quadradinho Mágico", 180, titulo=True
+            tela, "INSPER'S HARDEST GAME", 180, titulo=True
         )
         self.texto_centralizado(
             tela, "ENTER — Começar", 300
@@ -33,7 +34,7 @@ class Interface:
         )
 
     def desenhar_instrucoes(self, tela):
-        tela.fill((180, 180, 255))
+        tela.fill((240, 240, 243))
 
         self.texto_centralizado(
             tela, "Como jogar", 100, titulo=True
@@ -43,7 +44,7 @@ class Interface:
             "Use as setas ou WASD para se movimentar.",
             "Desvie dos círculos azuis.",
             "Colete todas as moedas amarelas.",
-            "Entre na área verde da direita para avançar.",
+            "Entre na saída verde após coletar as moedas.",
             "Ao morrer, as moedas da fase reaparecem.",
             "ESC — Voltar ao menu",
         ]

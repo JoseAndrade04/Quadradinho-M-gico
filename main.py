@@ -103,7 +103,7 @@ while rodando:
             else:
                 venceu=True
 
-    tela.fill((180, 180, 255))
+    tela.fill((240, 240, 243))
     fase.desenhar(tela)
     jogador.desenhar(tela)
 
@@ -122,6 +122,19 @@ while rodando:
         (0, 0, 0),
     )
     tela.blit(texto_moedas, (20, 60))
+    texto_fase = interface.fonte_texto.render(
+    f"Sala {numero_fase}/{TOTAL_FASES}: {fase.nome}",
+    True,
+    (200, 16, 46),
+    )
+
+    posicao_fase = texto_fase.get_rect(
+    topright=(LARGURA - 20, 20)
+    )
+
+    tela.blit(texto_fase, posicao_fase)
+
+    
 
     if venceu:
         mensagem = fonte.render(

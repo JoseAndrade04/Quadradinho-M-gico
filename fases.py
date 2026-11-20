@@ -17,6 +17,7 @@ class Fase:
         self.mapa = dados["mapa"]
 
         self.paredes = []
+        self.mesas= []
         self.chao = []
         self.areas_verdes = []
         self.chegadas = []
@@ -50,14 +51,19 @@ class Fase:
                     x, y, TAMANHO_BLOCO, TAMANHO_BLOCO
                 )
 
+                if simbolo == "D":
+                    self.paredes.append(bloco)
+                    self.mesas.append(bloco)
+                    continue
+
                 if simbolo in "# ":
                     self.paredes.append(bloco)
                     continue
 
-                cor = (245, 245, 255)
+                cor = (245, 245, 245)
 
                 if (linha + coluna) % 2 == 1:
-                    cor = (225, 225, 250)
+                    cor = (225, 225, 230)
 
                 self.chao.append((bloco, cor))
 
@@ -91,15 +97,55 @@ class Fase:
             pygame.draw.rect(tela, cor, bloco)
 
         for bloco in self.areas_verdes:
-            pygame.draw.rect(tela, (170, 255, 170), bloco)
+            pygame.draw.rect(tela, (170, 235, 170), bloco)
+
+        for bloco in self.chegadas:
+            pygame.draw.rect(tela,(70,190,100),bloco)
+            pygame.draw.rect(tela,(255,255,255),bloco.inflate(-8,-8),2,)
 
         for bloco in self.checkpoints:
             if bloco == self.checkpoint_ativo:
-                cor = (40, 200, 120)
+                cor = (200, 16, 46)
             else:
-                cor = (100, 220, 100)
+                cor = (130, 130, 145)
 
             pygame.draw.rect(tela, cor, bloco)
+
+        for mesa in self.mesas:
+            pygame.draw.rect(
+                tela,
+                (85, 85, 95),
+                mesa,
+            )
+
+            pygame.draw.rect(
+                tela,
+                (45, 45, 52),
+                mesa,
+                2,
+            )
+
+            # Caderno sobre a mesa.
+            caderno = pygame.Rect(
+                mesa.x + 8,
+                mesa.y + 6,
+                14,
+                18,
+            )
+
+            pygame.draw.rect(
+                tela,
+                (255, 255, 255),
+                caderno,
+            )
+
+            pygame.draw.line(
+                tela,
+                (200, 16, 46),
+                (caderno.x + 3, caderno.y),
+                (caderno.x + 3, caderno.bottom),
+                2,
+            )
 
         for moeda in self.moedas:
             moeda.desenhar(tela)
@@ -120,7 +166,7 @@ class Fase:
 
         for linha, texto in enumerate(self.mapa):
             for coluna, simbolo in enumerate(texto):
-                if simbolo not in "# ":
+                if simbolo not in "# D ":
                     caminhos.add((coluna, linha))
 
         for coluna, linha in caminhos:

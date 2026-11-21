@@ -6,7 +6,7 @@ class Jogador:
         self.rect = pygame.Rect(x, y, 24, 24)
         self.posicao = pygame.Vector2(x, y)
         self.cor = (200, 16, 46)
-        self.velocidade = 240
+        self.velocidade = 220
         
 
     def desenhar(self, tela):

@@ -295,6 +295,187 @@ FASES = [
             bola("vertical", 25, 11, 11, 13, 120, 1),
         ],
     },
-]
+        {
+        "nome": "Tobogã - Só mais uma descida",
 
+        "mapa": [
+            "##############################",
+            "#GGG------####################",
+            "#GSG------########-----#######",
+            "#GGG------######---M-----#####",
+            "#######---#####-----------####",
+            "#---------####----#####----###",
+            "#--M------####----#####----###",
+            "#---------####----#####---M###",
+            "#---##########----#####----###",
+            "#---------####----#####----###",
+            "#---------#####-----------####",
+            "#-------C-------M--------#####",
+            "##################--FFF#######",
+            "##############################",
+            "##############################",
+        ],
+
+        "obstaculos": [
+            # Fila: uma bola em cada trecho.
+            bola("horizontal", 5, 2, 4, 9, 125, 1),
+            bola("horizontal", 8, 6, 1, 9, 145, -1),
+            bola("horizontal", 2, 10, 1, 9, 135, 1),
+
+            # Tobogã: oito bolas girando ao redor da ilha.
+            *[
+                {
+                    "tipo": "circular",
+                    "coluna_centro": 20,
+                    "linha_centro": 7,
+                    "raio_orbita": 4.5,
+                    "angulo": angulo,
+                    "velocidade_angular": 85,
+                }
+                for angulo in range(0, 360, 45)
+            ],
+        ],
+    },
+
+        {
+        "nome": "FABLAB - Circuito de fabricação",
+
+        "mapa": [
+            "##############################",
+            "#--------#-DDGSGGDD-#--------#",
+            "#--M-----#-DD----DD-------M--#",
+            "#----------------------------#",
+            "#-------------------##########",
+            "#--------#----------#--------#",
+            "#--------#----------------M--#",
+            "##########-------------------#",
+            "#--------#----------##########",
+            "#--------#----------#--------#",
+            "#----------------------------#",
+            "#--M----------C-----------M--#",
+            "#--------#-DD----DD-#--------#",
+            "#--------#-DDFFFFDD-#--------#",
+            "##############################",
+        ],
+
+            "obstaculos": [
+            # IMPRESSORAS 3D.
+            # Duas barreiras verticais em sentidos opostos.
+            bola("vertical", 4, 1, 1, 6, 145, 1),
+            bola("vertical", 6, 6, 1, 6, 145, -1),
+
+            # LASER.
+            # Duas varreduras horizontais e uma vertical.
+            bola("horizontal", 2, 10, 1, 8, 155, 1),
+            bola("horizontal", 7, 11, 1, 8, 155, -1),
+            bola("vertical", 6, 13, 8, 13, 120, -1),
+
+            # PINTURA.
+            # Cruzamento perto da moeda.
+            bola("horizontal", 22, 2, 22, 28, 145, 1),
+            bola("vertical", 25, 3, 1, 3, 105, -1),
+
+            # FRESA.
+            # É preciso atravessar duas trajetórias.
+            bola("horizontal", 28, 6, 22, 28, 165, -1),
+            bola("vertical", 24, 5, 5, 7, 115, 1),
+
+            # MARCENARIA.
+            # Duas barreiras verticais e uma horizontal.
+            bola("vertical", 24, 9, 9, 13, 145, 1),
+            bola("vertical", 27, 13, 9, 13, 145, -1),
+            bola("horizontal", 28, 12, 21, 28, 140, -1),
+
+            # CRUZ CENTRAL.
+            # Braços maiores, com cinco bolas bem próximas.
+            *[
+                {
+                    "tipo": "circular",
+                    "coluna_centro": 14.5,
+                    "linha_centro": 7,
+                    "raio_orbita": distancia,
+                    "angulo": angulo,
+                    "velocidade_angular": 65,
+                }
+                for angulo in (0, 90, 180, 270)
+                for distancia in (0.8, 1.6, 2.4, 3.2, 4)
+            ],
+
+            # Eixo fixo da cruz.
+            {
+                "tipo": "circular",
+                "coluna_centro": 14.5,
+                "linha_centro": 7,
+                "raio_orbita": 0,
+                "angulo": 0,
+                "velocidade_angular": 0,
+            },
+        ], },
+                    {
+        "nome": "Feira de jogos - Última ficha",
+
+        "mapa": [
+            "##############################",
+            "#--------#-DDGSGGDD-#--------#",
+            "#-M------#-DD----DD-#------M-#",
+            "#----------------------------#",
+            "#----------------------------#",
+            "#--------#----------#--------#",
+            "#--------#----------#--------#",
+            "##########----M-----##########",
+            "#--------#----------#--------#",
+            "#--------#----------#--------#",
+            "#----------------------------#",
+            "#-M-------------------------M#",
+            "#--------#-DD----DD-#--------#",
+            "#--------#-DDFFFFDD-#--------#",
+            "##############################",
+        ],
+
+        "obstaculos": [
+            # RITMO — superior esquerdo.
+            bola("vertical", 3, 1, 1, 6, 130, 1),
+            bola("vertical", 6, 6, 1, 6, 130, -1),
+
+            # PONG — superior direito.
+            bola("horizontal", 21, 2, 21, 28, 140, 1),
+            bola("horizontal", 28, 4, 21, 28, 140, -1),
+
+            # NAVE — inferior esquerdo.
+            bola("horizontal", 1, 9, 1, 8, 130, 1),
+            bola("vertical", 5, 8, 8, 13, 110, 1),
+
+            # CORRIDA — inferior direito.
+            bola("vertical", 23, 8, 8, 13, 120, 1),
+            bola("vertical", 27, 13, 8, 13, 135, -1),
+
+            # ARENA CENTRAL — anel externo.
+            # Oito bolas girando no sentido horário.
+            *[
+                {
+                    "tipo": "circular",
+                    "coluna_centro": 14.5,
+                    "linha_centro": 7,
+                    "raio_orbita": 4,
+                    "angulo": angulo,
+                    "velocidade_angular": 40,
+                }
+                for angulo in range(0, 360, 45)
+            ],
+
+            # ARENA CENTRAL — anel interno.
+            # Quatro bolas girando no sentido contrário.
+            *[
+                {
+                    "tipo": "circular",
+                    "coluna_centro": 14.5,
+                    "linha_centro": 7,
+                    "raio_orbita": 2,
+                    "angulo": angulo + 15,
+                    "velocidade_angular": -55,
+                }
+                for angulo in range(0, 360, 90)
+            ],
+        ],
+    },]
 TOTAL_FASES = len(FASES)

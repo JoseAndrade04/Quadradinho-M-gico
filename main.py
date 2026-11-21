@@ -13,7 +13,7 @@ tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Quadradinho Mágico")
 relogio = pygame.time.Clock()
 
-numero_fase=1
+numero_fase=8
 fase=Fase(numero_fase)
 jogador=Jogador(fase.inicio[0], fase.inicio[1])
 

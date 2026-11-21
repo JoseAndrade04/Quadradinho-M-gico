@@ -1,3 +1,5 @@
+"""Inicializa o jogo e controla eventos, telas e a atualização da partida."""
+
 import pygame
 from jogador import Jogador
 from fases import Fase, TOTAL_FASES
@@ -10,22 +12,23 @@ LARGURA = 900
 ALTURA = 600
 
 tela = pygame.display.set_mode((LARGURA, ALTURA))
-pygame.display.set_caption("Quadradinho Mágico")
+pygame.display.set_caption("Insper's Hardest Game")
 relogio = pygame.time.Clock()
 
-numero_fase=1
-fase=Fase(numero_fase)
-jogador=Jogador(fase.inicio[0], fase.inicio[1])
+numero_fase = 1
+fase = Fase(numero_fase)
+jogador = Jogador(fase.inicio[0], fase.inicio[1])
 
-mortes=0
-fonte=pygame.font.Font(None,36)
+mortes = 0
 
-venceu=False
+venceu = False
 
 interface = Interface()
+# Guarda a tela para retomar a mesma partida ao sair do menu.
+tela_retorno = "apresentacao"
 tela_atual = "menu"
 inicio_apresentacao = 0
-duracao_apresentacao = 2000  # Milissegundos: 3 segundos.
+duracao_apresentacao = 2000  # Milissegundos: 2 segundos.
 
 frases_fases = {
     1: ["Cada enxadada uma minhoca"],
@@ -43,13 +46,32 @@ while rodando:
     dt = min(relogio.tick(60) / 1000, 0.05)
 
     for evento in pygame.event.get():
+        acao_vitoria = None
         if evento.type == pygame.QUIT:
             rodando = False
+
+        elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+            if tela_atual == "menu":
+                if interface.botoes_menu["jogar"].collidepoint(evento.pos):
+                    tela_atual = tela_retorno
+                    inicio_apresentacao = pygame.time.get_ticks()
+                elif interface.botoes_menu["instrucoes"].collidepoint(evento.pos):
+                    tela_atual = "instrucoes"
+            elif tela_atual in ("jogo", "apresentacao"):
+                if interface.botao_menu_hud.collidepoint(evento.pos):
+                    tela_retorno = tela_atual
+                    tela_atual = "menu"
+
+            elif tela_atual == "vitoria":
+                for acao, retangulo in interface.botoes_vitoria.items():
+                    if retangulo.collidepoint(evento.pos):
+                        acao_vitoria = acao
+                        break
 
         elif evento.type == pygame.KEYDOWN:
             if tela_atual == "menu":
                 if evento.key == pygame.K_RETURN:
-                    tela_atual = "apresentacao"
+                    tela_atual = tela_retorno
                     inicio_apresentacao = pygame.time.get_ticks()
 
                 elif evento.key == pygame.K_i:
@@ -59,25 +81,38 @@ while rodando:
                 if evento.key == pygame.K_ESCAPE:
                     tela_atual = "menu"
 
+            elif tela_atual == "apresentacao":
+                if evento.key == pygame.K_ESCAPE:
+                    tela_retorno = "apresentacao"
+                    tela_atual = "menu"
+
             elif tela_atual == "jogo":
-                if evento.key == pygame.K_r and venceu:
-                    numero_fase = 1
-                    fase = Fase(numero_fase)
+                if evento.key == pygame.K_ESCAPE:
+                    tela_retorno = "jogo"
+                    tela_atual = "menu"
 
-                    jogador = Jogador(
-                        fase.inicio[0], fase.inicio[1]
-                    )
+            elif tela_atual == "vitoria":
+                if evento.key in (pygame.K_RETURN, pygame.K_r):
+                    acao_vitoria = "reiniciar"
+                elif evento.key == pygame.K_ESCAPE:
+                    acao_vitoria = "menu"
 
-                    mortes = 0
-                    venceu = False
-                    tela_atual = "apresentacao"
-                    inicio_apresentacao = pygame.time.get_ticks()
+        if acao_vitoria is not None:
+            # As duas opções encerram a partida concluída e preparam uma nova.
+            numero_fase = 1
+            fase = Fase(numero_fase)
+            jogador = Jogador(*fase.inicio)
+            mortes = 0
+            venceu = False
+            tela_retorno = "apresentacao"
+            tela_atual = "apresentacao" if acao_vitoria == "reiniciar" else "menu"
+            inicio_apresentacao = pygame.time.get_ticks()
 
     if not rodando:
         break
 
     if tela_atual == "menu":
-        interface.desenhar_menu(tela)
+        interface.desenhar_menu(tela, continuar=(tela_retorno == "jogo"))
         pygame.display.flip()
         continue
 
@@ -87,127 +122,82 @@ while rodando:
         continue
 
     if tela_atual == "apresentacao":
-        tela.fill((240, 240, 243))
+        tempo_passado = pygame.time.get_ticks() - inicio_apresentacao
+        progresso = min(tempo_passado / duracao_apresentacao, 1)
 
-        interface.texto_centralizado(
+        interface.desenhar_apresentacao(
             tela,
-            f"FASE {numero_fase}",
-            150,
-            titulo=True,
-        )
-
-
-        frases = frases_fases.get(
             numero_fase,
-            ["Prepare-se!"],
+            TOTAL_FASES,
+            fase.nome,
+            frases_fases.get(numero_fase, ["Prepare-se!"]),
+            progresso,
+            mortes=mortes,
         )
-
-        for indice, frase in enumerate(frases):
-            interface.texto_centralizado(
-                tela,
-                frase,
-                300 + indice * 70,
-                titulo=True,
-            )
-
         pygame.display.flip()
-
-        tempo_passado = (
-            pygame.time.get_ticks() - inicio_apresentacao
-        )
 
         if tempo_passado >= duracao_apresentacao:
             tela_atual = "jogo"
 
         continue
 
+    if tela_atual == "vitoria":
+        interface.desenhar_vitoria(tela, mortes, TOTAL_FASES)
+        pygame.display.flip()
+        continue
+
     if not venceu:
-        teclas = pygame.key.get_pressed()
-        jogador.mover(teclas, dt, fase.paredes)
-        jogador.limitar_na_tela(tela)
+        # O cenário continua em movimento mesmo durante a animação de morte.
         fase.atualizar(dt)
-        
-        for obstaculo in fase.obstaculos:
-    
-            if (
-                not fase.esta_em_area_segura(jogador.rect)
-                and jogador.encostou_obstaculo(obstaculo)
-            ):
-                mortes += 1
 
-                jogador.voltar_ao_inicio(
-                    fase.ponto_retorno
-                )
-
+        if jogador.morto:
+            if jogador.atualizar_morte(dt, fase.ponto_retorno):
                 fase.reiniciar_moedas()
-                break
-        
-        fase.coletar_moedas(jogador.rect)
-        fase.verificar_checkpoints(jogador.rect)
+        else:
+            teclas = pygame.key.get_pressed()
+            jogador.mover(teclas, dt, fase.paredes)
+            jogador.limitar_na_tela(tela)
 
-        if fase.foi_concluida(jogador.rect):
-            if numero_fase < TOTAL_FASES:
-                numero_fase += 1
-                fase = Fase(numero_fase)
-                jogador.voltar_ao_inicio(fase.inicio)
+            for obstaculo in fase.obstaculos:
+                if not fase.esta_em_area_segura(
+                    jogador.rect
+                ) and jogador.encostou_obstaculo(obstaculo):
+                    mortes += 1
+                    jogador.iniciar_morte()
+                    break
 
-                tela_atual = "apresentacao"
-                inicio_apresentacao = pygame.time.get_ticks()
-                continue
-            else:
-                venceu = True
+            # Um personagem morto não coleta, ativa checkpoints nem termina fases.
+            if not jogador.morto:
+                fase.coletar_moedas(jogador.rect)
+                fase.verificar_checkpoints(jogador.rect)
+
+                if fase.foi_concluida(jogador.rect):
+                    if numero_fase < TOTAL_FASES:
+                        numero_fase += 1
+                        fase = Fase(numero_fase)
+                        jogador.voltar_ao_inicio(fase.inicio)
+                        tela_atual = "apresentacao"
+                        inicio_apresentacao = pygame.time.get_ticks()
+                        continue
+                    else:
+                        venceu = True
+                        tela_atual = "vitoria"
+                        continue
 
     tela.fill((240, 240, 243))
     fase.desenhar(tela)
     jogador.desenhar(tela)
 
-    texto_mortes = fonte.render(
-        f"Mortes: {mortes}", True, (0, 0, 0)
-    )
-    tela.blit(texto_mortes, (20, 20))
-    coletadas = 0
-
-    for moeda in fase.moedas:
-        if moeda.coletada:
-            coletadas += 1
-    texto_moedas = fonte.render(
-        f"Moedas: {coletadas}/{len(fase.moedas)}",
-        True,
-        (0, 0, 0),
-    )
-    tela.blit(texto_moedas, (20, 60))
-    texto_fase = interface.fonte_texto.render(
-    f"Sala {numero_fase}/{TOTAL_FASES}: {fase.nome}",
-    True,
-    (200, 16, 46),
+    coletadas = sum(moeda.coletada for moeda in fase.moedas)
+    interface.desenhar_hud(
+        tela,
+        numero_fase,
+        TOTAL_FASES,
+        mortes,
+        coletadas,
+        len(fase.moedas),
     )
 
-    posicao_fase = texto_fase.get_rect(
-    topright=(LARGURA - 20, 20)
-    )
-
-    tela.blit(texto_fase, posicao_fase)
-
-    
-
-    if venceu:
-        mensagem = fonte.render(
-            "Fase concluída!", True, (0, 0, 0)
-        )
-        posicao_mensagem = mensagem.get_rect(
-            center=(LARGURA // 2, 110)
-        )
-        tela.blit(mensagem, posicao_mensagem)
-
-        instrucao = fonte.render(
-            "Pressione R para jogar novamente",
-            True,
-            (0, 0, 0),
-        )
-        posicao_instrucao = instrucao.get_rect(
-            center=(LARGURA // 2, 500)
-        )
-        tela.blit(instrucao, posicao_instrucao)
     pygame.display.flip()
 
 pygame.quit()

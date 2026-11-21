@@ -1,4 +1,7 @@
+"""Transforma mapas em objetos e aplica as regras de cada fase."""
+
 import pygame
+import texturas
 import math
 
 from mapas import (
@@ -8,16 +11,19 @@ from mapas import (
     ORIGEM_MAPA,
 )
 
+
 class Fase:
+    """Reúne cenário, objetos, áreas seguras e regras de uma fase."""
 
     def __init__(self, numero=1):
+        """Carrega a fase pelo número, começando em 1, e prepara seus objetos."""
         dados = FASES[numero - 1]
 
         self.nome = dados["nome"]
         self.mapa = dados["mapa"]
 
         self.paredes = []
-        self.mesas= []
+        self.mesas = []
         self.chao = []
         self.areas_verdes = []
         self.chegadas = []
@@ -27,7 +33,6 @@ class Fase:
         self.checkpoint_ativo = None
 
         self.inicio = None
-        
 
         self.ler_mapa()
 
@@ -35,11 +40,14 @@ class Fase:
         self.moedas_salvas = [False for moeda in self.moedas]
 
         for configuracao in dados["obstaculos"]:
-            self.obstaculos.append(
-                Obstaculo(configuracao)
-            )
+            self.obstaculos.append(Obstaculo(configuracao))
 
     def ler_mapa(self):
+        """Converte os símbolos do mapa em retângulos e objetos do jogo.
+
+        A posição de cada bloco considera a origem do mapa e o tamanho
+        definido em mapas.py. Mesas também entram na lista de paredes.
+        """
         origem_x, origem_y = ORIGEM_MAPA
 
         for linha, texto in enumerate(self.mapa):
@@ -47,9 +55,7 @@ class Fase:
                 x = origem_x + coluna * TAMANHO_BLOCO
                 y = origem_y + linha * TAMANHO_BLOCO
 
-                bloco = pygame.Rect(
-                    x, y, TAMANHO_BLOCO, TAMANHO_BLOCO
-                )
+                bloco = pygame.Rect(x, y, TAMANHO_BLOCO, TAMANHO_BLOCO)
 
                 if simbolo == "D":
                     self.paredes.append(bloco)
@@ -80,72 +86,36 @@ class Fase:
                     self.chegadas.append(bloco)
 
                 elif simbolo == "M":
-                    self.moedas.append(
-                        Moeda(bloco.centerx, bloco.centery)
-                    )
-                
+                    self.moedas.append(Moeda(bloco.centerx, bloco.centery))
+
                 elif simbolo == "C":
                     self.checkpoints.append(bloco)
 
     def atualizar(self, dt):
+        """Avança os obstáculos usando dt, o tempo do quadro em segundos."""
         for obstaculo in self.obstaculos:
             obstaculo.atualizar(dt)
 
-
     def desenhar(self, tela):
+        """Desenha cenário e objetos sem modificar a geometria das colisões."""
         for bloco, cor in self.chao:
-            pygame.draw.rect(tela, cor, bloco)
+            # Troca só o desenho do piso; o retângulo continua igual.
+            variante = (bloco.x // TAMANHO_BLOCO + bloco.y // TAMANHO_BLOCO) % 2
+            tela.blit(texturas.piso(TAMANHO_BLOCO, variante), bloco)
 
         for bloco in self.areas_verdes:
             pygame.draw.rect(tela, (170, 235, 170), bloco)
 
-        for bloco in self.chegadas:
-            pygame.draw.rect(tela,(70,190,100),bloco)
-            pygame.draw.rect(tela,(255,255,255),bloco.inflate(-8,-8),2,)
+        texturas.desenhar_saidas(tela, self.chegadas)
 
         for bloco in self.checkpoints:
-            if bloco == self.checkpoint_ativo:
-                cor = (200, 16, 46)
-            else:
-                cor = (130, 130, 145)
-
-            pygame.draw.rect(tela, cor, bloco)
-
-        for mesa in self.mesas:
-            pygame.draw.rect(
-                tela,
-                (85, 85, 95),
-                mesa,
+            arte = texturas.puff(
+                bloco.width, bloco.height, bloco == self.checkpoint_ativo
             )
+            tela.blit(arte, bloco)
 
-            pygame.draw.rect(
-                tela,
-                (45, 45, 52),
-                mesa,
-                2,
-            )
-
-            # Caderno sobre a mesa.
-            caderno = pygame.Rect(
-                mesa.x + 8,
-                mesa.y + 6,
-                14,
-                18,
-            )
-
-            pygame.draw.rect(
-                tela,
-                (255, 255, 255),
-                caderno,
-            )
-
-            pygame.draw.line(
-                tela,
-                (200, 16, 46),
-                (caderno.x + 3, caderno.y),
-                (caderno.x + 3, caderno.bottom),
-                2,
-            )
+        # Agrupa apenas o desenho dos blocos contíguos da mesma mesa.
+        texturas.desenhar_mesas(tela, self.mesas)
 
         for moeda in self.moedas:
             moeda.desenhar(tela)
@@ -153,14 +123,13 @@ class Fase:
         for obstaculo in self.obstaculos:
             obstaculo.desenhar(tela)
 
-
         self.desenhar_contorno(tela)
 
     def desenhar_contorno(self, tela):
-
+        """Desenha apenas as bordas dos caminhos em contato com paredes e mesas."""
         origem_x, origem_y = ORIGEM_MAPA
         espessura = 5
-        preto = (0, 0, 0)
+        preto = (43, 43, 49)
 
         caminhos = set()
 
@@ -177,32 +146,22 @@ class Fase:
             base = y + TAMANHO_BLOCO
 
             if (coluna, linha - 1) not in caminhos:
-                self.linha_contorno(
-                    tela, (x, y), (direita, y), espessura
-                )
+                self.linha_contorno(tela, (x, y), (direita, y), espessura)
 
             if (coluna, linha + 1) not in caminhos:
-                self.linha_contorno(
-                    tela, (x, base), (direita, base), espessura
-                )
+                self.linha_contorno(tela, (x, base), (direita, base), espessura)
 
             if (coluna - 1, linha) not in caminhos:
-                self.linha_contorno(
-                    tela, (x, y), (x, base), espessura
-                )
+                self.linha_contorno(tela, (x, y), (x, base), espessura)
 
             if (coluna + 1, linha) not in caminhos:
-                self.linha_contorno(
-                    tela, (direita, y), (direita, base), espessura
-                )
+                self.linha_contorno(tela, (direita, y), (direita, base), espessura)
 
     def linha_contorno(self, tela, inicio, fim, espessura):
+        """Desenha uma borda com pontas preenchidas para unir os cantos."""
+        preto = (43, 43, 49)
 
-        preto = (0, 0, 0)
-
-        pygame.draw.line(
-            tela, preto, inicio, fim, espessura
-        )
+        pygame.draw.line(tela, preto, inicio, fim, espessura)
 
         for x, y in (inicio, fim):
             ponta = pygame.Rect(
@@ -214,14 +173,25 @@ class Fase:
             pygame.draw.rect(tela, preto, ponta)
 
     def coletar_moedas(self, jogador_rect):
+        """Verifica se o estudante encostou em cada moeda ainda disponível."""
         for moeda in self.moedas:
             moeda.tentar_coletar(jogador_rect)
 
     def reiniciar_moedas(self):
+        """Restaura as moedas ao estado salvo no último checkpoint.
+
+        Antes do primeiro checkpoint, todas as moedas voltam ao cenário.
+        Depois dele, as moedas já salvas continuam coletadas.
+        """
         for indice, moeda in enumerate(self.moedas):
             moeda.coletada = self.moedas_salvas[indice]
 
     def foi_concluida(self, jogador_rect):
+        """Retorna se todas as moedas foram coletadas e o jogador chegou.
+
+        O retângulo inteiro do estudante deve estar dentro da união dos
+        blocos de saída; apenas encostar na borda não conclui a fase.
+        """
         for moeda in self.moedas:
             if not moeda.coletada:
                 return False
@@ -230,16 +200,17 @@ class Fase:
 
         for bloco in self.chegadas:
             intersecao = jogador_rect.clip(bloco)
-            area_na_chegada += (
-                intersecao.width * intersecao.height
-            )
+            area_na_chegada += intersecao.width * intersecao.height
 
         area_jogador = jogador_rect.width * jogador_rect.height
 
         return area_na_chegada == area_jogador
 
     def verificar_checkpoints(self, jogador_rect):
+        """Salva o retorno e as moedas quando o estudante ocupa um checkpoint.
 
+        A ativação exige o retângulo inteiro do estudante dentro do bloco.
+        """
         for bloco in self.checkpoints:
             if bloco.contains(jogador_rect):
                 self.checkpoint_ativo = bloco
@@ -249,13 +220,12 @@ class Fase:
                     bloco.centery - jogador_rect.height // 2,
                 )
 
-                self.moedas_salvas = [
-                    moeda.coletada for moeda in self.moedas
-                ]
+                self.moedas_salvas = [moeda.coletada for moeda in self.moedas]
 
                 break
 
     def esta_em_area_segura(self, jogador_rect):
+        """Retorna se o estudante está inteiramente coberto por blocos seguros."""
         area_segura = 0
 
         for bloco in self.areas_verdes:
@@ -266,8 +236,12 @@ class Fase:
 
         return area_segura == area_jogador
 
+
 class Obstaculo:
+    """Representa uma bola com movimento horizontal, vertical ou circular."""
+
     def __init__(self, dados):
+        """Converte a configuração em blocos para posições e limites em pixels."""
         origem_x, origem_y = ORIGEM_MAPA
 
         self.tipo = dados["tipo"]
@@ -276,33 +250,23 @@ class Obstaculo:
 
         if self.tipo == "circular":
             self.centro = pygame.Vector2(
-                origem_x
-                + (dados["coluna_centro"] + 0.5) * TAMANHO_BLOCO,
-
-                origem_y
-                + (dados["linha_centro"] + 0.5) * TAMANHO_BLOCO,
+                origem_x + (dados["coluna_centro"] + 0.5) * TAMANHO_BLOCO,
+                origem_y + (dados["linha_centro"] + 0.5) * TAMANHO_BLOCO,
             )
 
-            self.raio_orbita = (
-                dados["raio_orbita"] * TAMANHO_BLOCO
-            )
+            self.raio_orbita = dados["raio_orbita"] * TAMANHO_BLOCO
 
             self.angulo = math.radians(dados["angulo"])
 
-            self.velocidade_angular = math.radians(
-                dados["velocidade_angular"]
-            )
+            self.velocidade_angular = math.radians(dados["velocidade_angular"])
 
             self.posicao = pygame.Vector2()
             self.atualizar_posicao_circular()
 
         else:
             self.posicao = pygame.Vector2(
-                origem_x
-                + (dados["coluna"] + 0.5) * TAMANHO_BLOCO,
-
-                origem_y
-                + (dados["linha"] + 0.5) * TAMANHO_BLOCO,
+                origem_x + (dados["coluna"] + 0.5) * TAMANHO_BLOCO,
+                origem_y + (dados["linha"] + 0.5) * TAMANHO_BLOCO,
             )
 
             self.velocidade = dados["velocidade"]
@@ -314,29 +278,19 @@ class Obstaculo:
                 origem = origem_y
 
             self.limite_inicial = (
-                origem
-                + (dados["limite_inicial"] + 0.5)
-                * TAMANHO_BLOCO
+                origem + (dados["limite_inicial"] + 0.5) * TAMANHO_BLOCO
             )
 
-            self.limite_final = (
-                origem
-                + (dados["limite_final"] + 0.5)
-                * TAMANHO_BLOCO
-            )
+            self.limite_final = origem + (dados["limite_final"] + 0.5) * TAMANHO_BLOCO
 
     def atualizar_posicao_circular(self):
-        self.posicao.x = (
-            self.centro.x
-            + self.raio_orbita * math.cos(self.angulo)
-        )
+        """Calcula a posição da órbita usando o ângulo atual em radianos."""
+        self.posicao.x = self.centro.x + self.raio_orbita * math.cos(self.angulo)
 
-        self.posicao.y = (
-            self.centro.y
-            + self.raio_orbita * math.sin(self.angulo)
-        )
+        self.posicao.y = self.centro.y + self.raio_orbita * math.sin(self.angulo)
 
     def atualizar(self, dt):
+        """Avança a órbita ou o percurso linear usando dt em segundos."""
         if self.tipo == "circular":
             self.angulo += self.velocidade_angular * dt
             self.angulo %= 2 * math.pi
@@ -344,9 +298,7 @@ class Obstaculo:
             self.atualizar_posicao_circular()
 
         else:
-            deslocamento = (
-                self.velocidade * self.direcao * dt
-            )
+            deslocamento = self.velocidade * self.direcao * dt
 
             if self.tipo == "horizontal":
                 self.posicao.x += deslocamento
@@ -369,40 +321,42 @@ class Obstaculo:
                 self.posicao.y = valor
 
     def desenhar(self, tela):
+        """Desenha a bola azul com o mesmo centro e raio usados nas colisões."""
         centro = (
             round(self.posicao.x),
             round(self.posicao.y),
         )
 
-        pygame.draw.circle(
-            tela, (0, 0, 255), centro, self.raio
-        )
+        pygame.draw.circle(tela, (0, 0, 255), centro, self.raio)
 
-        pygame.draw.circle(
-            tela, (0, 0, 0), centro, self.raio, 3
-        )
+        pygame.draw.circle(tela, (0, 0, 0), centro, self.raio, 3)
+
 
 class Moeda:
-    def __init__(self,x,y):
-        self.posicao= pygame.Vector2(x,y)
-        self.raio=8
-        self.coletada=False
+    """Representa uma atividade coletável e registra se já foi recolhida."""
 
-    def tentar_coletar(self,jogador_rect):
+    def __init__(self, x, y):
+        """Cria uma moeda de raio 8 com centro em (x, y)."""
+        self.posicao = pygame.Vector2(x, y)
+        self.raio = 8
+        self.coletada = False
+
+    def tentar_coletar(self, jogador_rect):
+        """Marca a moeda como coletada quando seu círculo toca o jogador."""
         if self.coletada:
             return
-        ponto_x=max(jogador_rect.left,min(self.posicao.x,jogador_rect.right))
-        ponto_y=max(jogador_rect.top,min(self.posicao.y,jogador_rect.bottom))
+        ponto_x = max(jogador_rect.left, min(self.posicao.x, jogador_rect.right))
+        ponto_y = max(jogador_rect.top, min(self.posicao.y, jogador_rect.bottom))
 
-        distancia_x= self.posicao.x-ponto_x
-        distancia_y= self.posicao.y-ponto_y
+        distancia_x = self.posicao.x - ponto_x
+        distancia_y = self.posicao.y - ponto_y
 
         if distancia_x**2 + distancia_y**2 <= self.raio**2:
-            self.coletada=True
+            self.coletada = True
 
-    def desenhar(self,tela):
+    def desenhar(self, tela):
+        """Desenha a moeda arcade somente enquanto ela não foi coletada."""
         if not self.coletada:
-            centro=(round(self.posicao.x),round(self.posicao.y),)
-
-            pygame.draw.circle(tela,(255,220,0),centro,self.raio)
-            pygame.draw.circle(tela,(0,0,0,0),centro,self.raio,2)
+            centro = (round(self.posicao.x), round(self.posicao.y))
+            imagem = texturas.moeda(self.raio)
+            tela.blit(imagem, imagem.get_rect(center=centro))

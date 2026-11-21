@@ -1,20 +1,54 @@
+"""Controla movimento, colisões e animação de morte do estudante."""
+
 import pygame
+import texturas
+
 
 class Jogador:
+    """Representa o estudante e mantém sua posição e seu estado de vida."""
 
     def __init__(self, x, y):
+        """Cria o estudante em (x, y), com colisão de 24 × 24 pixels."""
         self.rect = pygame.Rect(x, y, 24, 24)
         self.posicao = pygame.Vector2(x, y)
         self.cor = (200, 16, 46)
         self.velocidade = 220
-        
+        self.morto = False
+        self.tempo_morte = 0
+        self.duracao_morte = 400  # Milissegundos.
 
     def desenhar(self, tela):
-        pygame.draw.rect(tela, self.cor, self.rect)
-        pygame.draw.rect(tela, (255, 255, 255), self.rect, 2)
+        """Pisca em vermelho durante a morte; fora dela usa o desenho normal."""
+        imagem = texturas.estudante(*self.rect.size)
+        if self.morto:
+            if self.tempo_morte >= 320 or (int(self.tempo_morte) // 80) % 2:
+                return
+            imagem = imagem.copy()
+            imagem.fill((255, 65, 65), special_flags=pygame.BLEND_RGB_MULT)
+        tela.blit(imagem, self.rect)
+
+    def iniciar_morte(self):
+        """Inicia a animação uma única vez para cada colisão fatal."""
+        self.morto = True
+        self.tempo_morte = 0
+
+    def atualizar_morte(self, dt, ponto_retorno):
+        """Retorna True no quadro em que renasce, sem bloquear os eventos."""
+        self.tempo_morte += dt * 1000
+        if self.tempo_morte >= self.duracao_morte:
+            self.voltar_ao_inicio(ponto_retorno)
+            self.morto = False
+            self.tempo_morte = 0
+            return True
+        return False
 
     def mover(self, teclas, dt, paredes):
+        """Move pelas teclas pressionadas, respeitando as paredes.
 
+        dt é o tempo do quadro em segundos. A direção é normalizada para
+        manter a mesma velocidade ao andar na diagonal. As colisões são
+        resolvidas separadamente nos eixos x e y.
+        """
         direcao = pygame.Vector2(0, 0)
 
         if teclas[pygame.K_LEFT] or teclas[pygame.K_a]:
@@ -57,7 +91,7 @@ class Jogador:
                 self.posicao.y = self.rect.y
 
     def limitar_na_tela(self, tela):
-    
+        """Mantém o estudante dentro da tela e sincroniza sua posição."""
         limites = tela.get_rect()
 
         if self.posicao.x < limites.left:
@@ -78,7 +112,11 @@ class Jogador:
         )
 
     def encostou_obstaculo(self, obstaculo):
+        """Retorna se o retângulo do estudante toca o círculo do obstáculo.
 
+        Usa o ponto do retângulo mais próximo ao centro do círculo para
+        comparar a distância ao quadrado com o raio ao quadrado.
+        """
         ponto_x = max(
             self.rect.left,
             min(obstaculo.posicao.x, self.rect.right),
@@ -96,11 +134,9 @@ class Jogador:
         return distancia_quadrado <= obstaculo.raio**2
 
     def voltar_ao_inicio(self, inicio):
-
+        """Reposiciona o estudante no início ou no checkpoint informado."""
         self.posicao = pygame.Vector2(inicio[0], inicio[1])
         self.rect.topleft = (
             round(self.posicao.x),
             round(self.posicao.y),
         )
-
-    

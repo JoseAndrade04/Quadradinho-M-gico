@@ -24,7 +24,19 @@ venceu=False
 
 interface = Interface()
 tela_atual = "menu"
+inicio_apresentacao = 0
+duracao_apresentacao = 2000  # Milissegundos: 3 segundos.
 
+frases_fases = {
+    1: ["Cada enxadada uma minhoca"],
+    2: ["APS chegando"],
+    3: ["O professor disse que essa era fácil."],
+    4: ["Pode entrar. Sua paz fica do lado de fora."],
+    5: ["Terminar o Praire Learn era melhor"],
+    6: ["Não leva a mochila"],
+    7: ["Coloca o EPI"],
+    8: ["Esse jogo foi mais fácil do que pegar DP"],
+}
 rodando = True
 
 while rodando:
@@ -37,7 +49,8 @@ while rodando:
         elif evento.type == pygame.KEYDOWN:
             if tela_atual == "menu":
                 if evento.key == pygame.K_RETURN:
-                    tela_atual = "jogo"
+                    tela_atual = "apresentacao"
+                    inicio_apresentacao = pygame.time.get_ticks()
 
                 elif evento.key == pygame.K_i:
                     tela_atual = "instrucoes"
@@ -57,6 +70,8 @@ while rodando:
 
                     mortes = 0
                     venceu = False
+                    tela_atual = "apresentacao"
+                    inicio_apresentacao = pygame.time.get_ticks()
 
     if not rodando:
         break
@@ -69,6 +84,45 @@ while rodando:
     if tela_atual == "instrucoes":
         interface.desenhar_instrucoes(tela)
         pygame.display.flip()
+        continue
+
+    if tela_atual == "apresentacao":
+        tela.fill((240, 240, 243))
+
+        interface.texto_centralizado(
+            tela,
+            f"FASE {numero_fase}",
+            150,
+            titulo=True,
+        )
+
+        interface.texto_centralizado(
+            tela,
+            fase.nome,
+            220,
+        )
+
+        frases = frases_fases.get(
+            numero_fase,
+            ["Prepare-se!"],
+        )
+
+        for indice, frase in enumerate(frases):
+            interface.texto_centralizado(
+                tela,
+                frase,
+                300 + indice * 40,
+            )
+
+        pygame.display.flip()
+
+        tempo_passado = (
+            pygame.time.get_ticks() - inicio_apresentacao
+        )
+
+        if tempo_passado >= duracao_apresentacao:
+            tela_atual = "jogo"
+
         continue
 
     if not venceu:
@@ -97,11 +151,15 @@ while rodando:
 
         if fase.foi_concluida(jogador.rect):
             if numero_fase < TOTAL_FASES:
-                numero_fase+=1
-                fase=Fase(numero_fase)
+                numero_fase += 1
+                fase = Fase(numero_fase)
                 jogador.voltar_ao_inicio(fase.inicio)
+
+                tela_atual = "apresentacao"
+                inicio_apresentacao = pygame.time.get_ticks()
+                continue
             else:
-                venceu=True
+                venceu = True
 
     tela.fill((240, 240, 243))
     fase.desenhar(tela)

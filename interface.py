@@ -57,6 +57,7 @@ class Interface:
         self.botoes_menu = {
             "jogar": pygame.Rect(290, 390, 320, 50),
             "instrucoes": pygame.Rect(290, 454, 320, 50),
+            "reiniciar":pygame.Rect(290,512,320,50),
         }
 
     def texto_centralizado(self, tela, texto, y, titulo=False):
@@ -78,10 +79,13 @@ class Interface:
         tela.blit(self.titulo_menu, posicao)
 
         mouse = pygame.mouse.get_pos()
-        opcoes = (
+        opcoes = [
             ("jogar", "CONTINUAR" if continuar else "JOGAR", "ENTER"),
             ("instrucoes", "COMO JOGAR", "I"),
-        )
+        ]
+
+        if continuar:
+            opcoes.append(("reiniciar","REINICIAR JOGO","R"))
 
         for acao, rotulo, atalho in opcoes:
             retangulo = self.botoes_menu[acao]

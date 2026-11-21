@@ -44,6 +44,7 @@ frases_fases = {
     8: ["Esse jogo foi mais fácil do que pegar DP"],
 }
 rodando = True
+partida_iniciada= False
 
 while rodando:
     dt = min(relogio.tick(60) / 1000, 0.05)
@@ -56,10 +57,13 @@ while rodando:
         elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
             if tela_atual == "menu":
                 if interface.botoes_menu["jogar"].collidepoint(evento.pos):
+                    partida_iniciada=True
                     tela_atual = tela_retorno
                     inicio_apresentacao = pygame.time.get_ticks()
                 elif interface.botoes_menu["instrucoes"].collidepoint(evento.pos):
                     tela_atual = "instrucoes"
+                elif (partida_iniciada  and interface.botoes_menu["reiniciar"].collidepoint(evento.pos)):
+                    acao_vitoria="menu"
             elif tela_atual in ("jogo", "apresentacao"):
                 if interface.botao_menu_hud.collidepoint(evento.pos):
                     tela_retorno = tela_atual
@@ -74,11 +78,15 @@ while rodando:
         elif evento.type == pygame.KEYDOWN:
             if tela_atual == "menu":
                 if evento.key == pygame.K_RETURN:
+                    partida_iniciada=True
                     tela_atual = tela_retorno
                     inicio_apresentacao = pygame.time.get_ticks()
 
                 elif evento.key == pygame.K_i:
                     tela_atual = "instrucoes"
+
+                elif evento.key == pygame.K_r and partida_iniciada:
+                    acao_vitoria = "menu"
 
             elif tela_atual == "instrucoes":
                 if evento.key == pygame.K_ESCAPE:
@@ -101,6 +109,7 @@ while rodando:
                     acao_vitoria = "menu"
 
         if acao_vitoria is not None:
+            partida_iniciada = (acao_vitoria == "reiniciar")
             # As duas opções encerram a partida concluída e preparam uma nova.
             numero_fase = 1
             fase = Fase(numero_fase)
@@ -117,7 +126,7 @@ while rodando:
     sons.atualizar_tela(tela_atual)
 
     if tela_atual == "menu":
-        interface.desenhar_menu(tela, continuar=(tela_retorno == "jogo"))
+        interface.desenhar_menu(tela, continuar=partida_iniciada)
         pygame.display.flip()
         continue
 

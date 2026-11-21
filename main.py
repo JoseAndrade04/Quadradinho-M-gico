@@ -96,11 +96,6 @@ while rodando:
             titulo=True,
         )
 
-        interface.texto_centralizado(
-            tela,
-            fase.nome,
-            220,
-        )
 
         frases = frases_fases.get(
             numero_fase,
@@ -111,7 +106,8 @@ while rodando:
             interface.texto_centralizado(
                 tela,
                 frase,
-                300 + indice * 40,
+                300 + indice * 70,
+                titulo=True,
             )
 
         pygame.display.flip()

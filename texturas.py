@@ -1,6 +1,6 @@
 """Texturas em PNG e detalhes desenhados com Pygame, sem alterar a geometria da fase.
 
-Implementação desenvolvida com auxílio do ChatGPT.
+Texturas desenvolvida com auxílio do ChatGPT.
 """
 
 from functools import lru_cache

@@ -4,7 +4,9 @@ import pygame
 from jogador import Jogador
 from fases import Fase, TOTAL_FASES
 from interface import Interface
+from sons import Sons
 
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
 
 
@@ -24,6 +26,7 @@ mortes = 0
 venceu = False
 
 interface = Interface()
+sons = Sons()
 # Guarda a tela para retomar a mesma partida ao sair do menu.
 tela_retorno = "apresentacao"
 tela_atual = "menu"
@@ -111,6 +114,8 @@ while rodando:
     if not rodando:
         break
 
+    sons.atualizar_tela(tela_atual)
+
     if tela_atual == "menu":
         interface.desenhar_menu(tela, continuar=(tela_retorno == "jogo"))
         pygame.display.flip()
@@ -164,11 +169,16 @@ while rodando:
                 ) and jogador.encostou_obstaculo(obstaculo):
                     mortes += 1
                     jogador.iniciar_morte()
+                    sons.tocar_morte()
                     break
 
             # Um personagem morto não coleta, ativa checkpoints nem termina fases.
             if not jogador.morto:
+                coletadas_antes = sum(moeda.coletada for moeda in fase.moedas)
                 fase.coletar_moedas(jogador.rect)
+                coletadas_depois = sum(moeda.coletada for moeda in fase.moedas)
+                for _ in range(coletadas_depois - coletadas_antes):
+                    sons.tocar_moeda()
                 fase.verificar_checkpoints(jogador.rect)
 
                 if fase.foi_concluida(jogador.rect):
@@ -200,4 +210,5 @@ while rodando:
 
     pygame.display.flip()
 
+sons.encerrar()
 pygame.quit()
